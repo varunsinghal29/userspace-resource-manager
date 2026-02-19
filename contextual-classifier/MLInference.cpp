@@ -33,7 +33,7 @@ MLInference::MLInference(const std::string &ft_model_path) : Inference(ft_model_
         "cgroup",                                                // 1x weight
         "cmdline", "cmdline", "cmdline", "cmdline", "cmdline",   // 5x weight
         "comm", "comm", "comm", "comm", "comm",                  // 5x weight
-        "maps", "maps",                                          // 2x weight - IMP FACTOR
+        "maps", "maps",                                          // 2x weight
         "fds",                                                   // 1x weight
         "environ",                                               // 1x weight
         "exe", "exe", "exe", "exe", "exe",                       // 5x weight
@@ -381,7 +381,7 @@ uint32_t MLInference::Predict(int pid,
     }
 
     // Call Function for top k prediction according to model.
-    LogTopKPredictions(pid, predictions, k);
+    //LogTopKPredictions(pid, predictions, k);
 
     // Extract top prediction
     fasttext::real probability = predictions[0].first;
