@@ -76,8 +76,7 @@ std::string MLInference::CleanTextPython(const std::string &input) {
     
     // Step 1: Convert to lowercase
     std::string line = input;
-    std::transform(line.begin(), line.end(), line.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
+    line = AuxRoutines::toLowerCase(line);
     
     // Step 2: Replace commas with spaces
     std::replace(line.begin(), line.end(), ',', ' ');
@@ -144,7 +143,7 @@ std::string MLInference::CleanTextPython(const std::string &input) {
         t = std::regex_replace(t, long_number_pattern_, "<num>");
         
         // Keep important browser-related terms (even if duplicate)
-        bool is_browser_term = false;
+        int8_t is_browser_term = false;
         for (const auto& browser_term : BROWSER_TERMS) {
             if (t.find(browser_term) != std::string::npos) {
                 is_browser_term = true;
@@ -304,9 +303,7 @@ uint32_t MLInference::Predict(int pid,
     std::istringstream iss(cleaned_text);
 
     // Use fasttext types (provided by Floret)
-    const int k = 3;
     std::vector<std::pair<fasttext::real, int32_t>> predictions;
-    predictions.reserve(k);
     
     std::vector<int32_t> words, labels;
     words.reserve(100);
@@ -324,7 +321,7 @@ uint32_t MLInference::Predict(int pid,
 
     // Make prediction
     const fasttext::real threshold = 0.0;
-    ft_model_.predict(k, words, predictions, threshold);
+    ft_model_.predict(1, words, predictions, threshold);
 
     if (predictions.empty()) {
         LOGW(CLASSIFIER_TAG,
