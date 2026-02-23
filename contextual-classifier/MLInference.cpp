@@ -48,20 +48,22 @@ MLInference::MLInference(const std::string &ft_model_path) : Inference(ft_model_
     hex_pattern_          = std::regex("0x[a-f0-9]+", std::regex::icase);
     long_number_pattern_  = std::regex("\\d{4,}");
 
-    syslog(LOG_DEBUG, "Loading Floret model from: %s", ft_model_path.c_str());
+    LOGD(CLASSIFIER_TAG, "Loading Floret model from: "+ft_model_path);
     try {
         ft_model_.loadModel(ft_model_path);
-        syslog(LOG_DEBUG, "Floret model Successfully loaded");
+        LOGD(CLASSIFIER_TAG, "Floret model Successfully loaded");
 
         embedding_dim_ = ft_model_.getDimension();
-        syslog(LOG_DEBUG, "Floret model loaded. Embedding dimension: %d", embedding_dim_);
+        LOGD(CLASSIFIER_TAG,
+             format_string("Floret model loaded. Embedding dimension: %d", embedding_dim_));
 
     } catch (const std::exception &e) {
-        syslog(LOG_CRIT, "Failed to load Floret model: %s", e.what());
+        LOGE(CLASSIFIER_TAG,
+             format_string("Failed to load Floret model: %s", e.what()));
         throw;
     }
 
-    syslog(LOG_INFO, "MLInference initialized. Floret dim: %d", embedding_dim_);
+    LOGI(CLASSIFIER_TAG, "MLInference initialized");
     (void)ft_model_path;
 }
 
@@ -261,7 +263,8 @@ uint32_t MLInference::Predict(int pid,
     
     std::lock_guard<std::mutex> lock(predict_mutex_);
 
-    syslog(LOG_DEBUG, "Starting prediction for PID: %d", pid);
+    LOGD(CLASSIFIER_TAG,
+             format_string("Starting prediction for PID: %d", pid));
 
     // Build concatenated text
     std::string concatenated_text;
@@ -279,7 +282,8 @@ uint32_t MLInference::Predict(int pid,
     }
 
     if (concatenated_text.empty()) {
-        syslog(LOG_WARNING, "No text features found for PID: %d", pid);
+        LOGW(CLASSIFIER_TAG,
+             format_string("No text features found for PID: %d", pid));
         cat = "Unknown";
         return 1;
     }
@@ -289,7 +293,8 @@ uint32_t MLInference::Predict(int pid,
     std::string cleaned_text = CleanTextPython(concatenated_text);
 
     if (cleaned_text.empty()) {
-        syslog(LOG_WARNING, "Text became empty after cleaning for PID: %d", pid);
+        LOGW(CLASSIFIER_TAG,
+             format_string("Text became empty after cleaning for PID: %d", pid));
         cat = "Unknown";
         return 1;
     }
@@ -311,7 +316,8 @@ uint32_t MLInference::Predict(int pid,
     ft_model_.getDictionary()->getLine(iss, words, labels);
     
     if (words.empty()) {
-        syslog(LOG_WARNING, "No words extracted from text for PID: %d", pid);
+        LOGW(CLASSIFIER_TAG,
+             format_string("No words extracted from text for PID: %d", pid));
         cat = "Unknown";
         return 1;
     }
@@ -321,7 +327,8 @@ uint32_t MLInference::Predict(int pid,
     ft_model_.predict(k, words, predictions, threshold);
 
     if (predictions.empty()) {
-        syslog(LOG_WARNING, "Floret returned no predictions for PID: %d", pid);
+        LOGW(CLASSIFIER_TAG,
+             format_string("Floret returned no predictions for PID: %d", pid));
         cat = "Unknown";
         return 1;
     }
