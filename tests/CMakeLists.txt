@@ -44,20 +44,26 @@ if(BUILD_TESTS)
         ${CMAKE_CURRENT_SOURCE_DIR}/Component/DeviceInfoTests.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/Component/CocoTableTests.cpp
         # ${CMAKE_CURRENT_SOURCE_DIR}/Component/RequestMapTests.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/Component/Trigger.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/Component/ContextClassificationTest.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/Component/Trigger.cpp)
 
     target_link_libraries(UrmComponentTests PUBLIC UrmAuxUtils
                                                    UrmExtAPIs
                                                    RestuneCore
-                                                   ContextualClassifier
-                                                   ml_inference_lib
                                                    RestuneTestUtils
                                                    ${LIBYAML_LIBRARIES})
     target_include_directories(UrmComponentTests PRIVATE ${LIBYAML_INCLUDE_DIRS}
-                                                         ${CMAKE_SOURCE_DIR}/contextual-classifier/Include
                                                          ${CMAKE_SOURCE_DIR}/resource-tuner/Include
                                                          ${CMAKE_SOURCE_DIR}/common/Include)
+
+    if(BUILD_CLASSIFIER)
+        target_sources(UrmComponentTests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/Component/ContextClassificationTest.cpp)
+
+        target_link_libraries(UrmComponentTests PUBLIC ContextualClassifier
+                                                       ml_inference_lib)
+
+        target_include_directories(UrmComponentTests PRIVATE ${CMAKE_SOURCE_DIR}/contextual-classifier/Include)
+    endif()
 
     install(TARGETS UrmComponentTests DESTINATION ${CMAKE_INSTALL_BINDIR})
 

@@ -257,9 +257,9 @@ URM_TEST(TestApplicationClassification, {
     std::cout << LOG_BASE << "Inference created successfully" << std::endl;
 
     // Test result counters
-    int passed = 0;
-    int failed = 0;
-    int skipped = 0;
+    int32_t passed = 0;
+    int32_t failed = 0;
+    int32_t skipped = 0;
 
     // Track failed and skipped applications for detailed reporting
     std::vector<std::string> failedApps;
