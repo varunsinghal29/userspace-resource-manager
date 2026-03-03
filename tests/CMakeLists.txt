@@ -56,19 +56,40 @@ if(BUILD_TESTS)
                                                          ${CMAKE_SOURCE_DIR}/common/Include)
 
     if(BUILD_CLASSIFIER)
-        target_sources(UrmComponentTests PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/Component/ContextClassificationTest.cpp)
+        set(FLORET_FOUND FALSE)
+        set(FLORET_LIBRARIES "")
+        set(FLORET_INCLUDE_DIRS "")
 
-        target_link_libraries(UrmComponentTests PUBLIC ContextualClassifier
-                                                       ml_inference_lib)
+        if(ENABLE_FLORET)
+            # Use pkg-config to find floret
+            pkg_check_modules(PC_FLORET QUIET floret)
+            if(PC_FLORET_FOUND)
+                set(FLORET_FOUND TRUE)
+                set(FLORET_LIBRARIES ${PC_FLORET_LIBRARIES})
+                set(FLORET_INCLUDE_DIRS ${PC_FLORET_INCLUDE_DIRS})
+                endif()
+         endif()
 
-        target_include_directories(UrmComponentTests PRIVATE ${CMAKE_SOURCE_DIR}/contextual-classifier/Include)
+        if(FLORET_FOUND)
+            message(STATUS "floret found, building MLInference with USE_FLORET=1")
+            add_definitions(-DUSE_FLORET=1)
+
+            target_sources(UrmComponentTests PRIVATE
+                ${CMAKE_CURRENT_SOURCE_DIR}/Component/ContextClassificationTest.cpp)
+
+            target_link_libraries(UrmComponentTests PUBLIC ContextualClassifier
+                                                           ml_inference_lib)
+
+            target_include_directories(UrmComponentTests PRIVATE
+                ${CMAKE_SOURCE_DIR}/contextual-classifier/Include)
+        else()
+            message(STATUS "floret not found")
+        endif()
     endif()
 
     install(TARGETS UrmComponentTests DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     add_executable(UrmIntegrationTests Integration/IntegrationTests.cpp)
-    add_definitions(-DUSE_FLORET=1)
 
     target_link_libraries(UrmIntegrationTests PUBLIC UrmAuxUtils
                                                      UrmClient
