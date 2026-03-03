@@ -7,6 +7,7 @@
 #include "TestUtils.h"
 #include "URMTests.h"
 #include "UrmAPIs.h"
+#include <thread>
 
 // Test configuration and paths
 #define TEST_CLASS "INTEGRATION"

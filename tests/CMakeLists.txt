@@ -67,7 +67,7 @@ if(BUILD_TESTS)
 
     install(TARGETS UrmComponentTests DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-    add_executable(UrmIntegrationTests Integration/IntegrationTests.cpp Integration/CCIntegrationTest.cpp)
+    add_executable(UrmIntegrationTests Integration/IntegrationTests.cpp)
     add_definitions(-DUSE_FLORET=1)
 
     target_link_libraries(UrmIntegrationTests PUBLIC UrmAuxUtils
@@ -75,6 +75,12 @@ if(BUILD_TESTS)
                                                      RestuneTestUtils
                                                      ${LIBYAML_LIBRARIES})
     target_include_directories(UrmIntegrationTests PRIVATE ${LIBYAML_INCLUDE_DIRS})
+
+    if(BUILD_CLASSIFIER)
+        target_sources(UrmIntegrationTests PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/Integration/CCIntegrationTest.cpp)
+    endif()
+
     install(TARGETS UrmIntegrationTests RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 endif()
