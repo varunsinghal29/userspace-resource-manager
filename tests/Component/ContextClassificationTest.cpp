@@ -160,33 +160,27 @@ std::vector<TestAppConfig> loadAppConfigs(const std::string& configPath) {
 }
 
 /*
- * Description: Verifies that the URM classifier model file is properly loaded and accessible
- * at system startup.
+ * Description: Verifies that the URM classifier model file is properly
+ * loaded and accessible at system startup.
  */
 URM_TEST(TestModelLoads, {
     const std::string modelPath = FT_MODEL_PATH;
 
-    // Wait for URM service to complete initialization and settle
-    // This ensures all service components, including the classifier subsystem,
-    // are fully initialized before we attempt to access the model file
+    // Wait for service to settle
     std::this_thread::sleep_for(std::chrono::milliseconds(1800));
 
-    // Verify model file exists and is accessible
-    // fileExists() returns file size if successful, -1 if file not found or inaccessible
-    int64_t modelExists = AuxRoutines::fileExists(modelPath);
+    // Verify model file exists
+    // fileExists() returns 1 if file exists, 0 if not
+    int8_t modelExists = AuxRoutines::fileExists(modelPath);
 
-    // Log the result for debugging
-    if (modelExists > 0) {
+    if (modelExists) {
         std::cout << LOG_BASE << "Model file found at: " << modelPath << std::endl;
-        std::cout << LOG_BASE << "Model file size: " << modelExists << " bytes" << std::endl;
-    } else {
-        std::cout << LOG_BASE << "ERROR: Model file not found or inaccessible" << std::endl;
-        std::cout << LOG_BASE << "Expected path: " << modelPath << std::endl;
-        std::cout << LOG_BASE << "Verify model deployment and file permissions" << std::endl;
+    }
+    else {
+        std::cout << LOG_BASE << "ERROR: Model file not found: " << modelPath << std::endl;
     }
 
-    // Assert that model file exists and is accessible (size > 0)
-    E_ASSERT((modelExists > 0));
+    E_ASSERT((modelExists == 1));
 })
 
 /*
