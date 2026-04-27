@@ -128,19 +128,42 @@ pid_t AuxRoutines::fetchPid(const std::string& process_name) {
     }
 
     closedir(proc_dir);
-    return -1; // Not found
+    return -1;
 }
 
 int8_t AuxRoutines::getProcName(pid_t pid, std::string& procName) {
-    std::string comm = "";
-    std::string commPath = COMM(pid);
-    std::ifstream commFile(commPath);
+    std::string cmdlinePath = "/proc/" + std::to_string(pid) + "/cmdline";
+    std::ifstream cmdlineFile(cmdlinePath);
+    
+    if(cmdlineFile.is_open()) {
+        std::string cmdline;
+        std::getline(cmdlineFile, cmdline, '\0');
+        
+        if(!cmdline.empty()) {
+            size_t lastSlash = cmdline.find_last_of('/');
+            if(lastSlash != std::string::npos) {
+                procName = cmdline.substr(lastSlash + 1);
+            } else {
+                procName = cmdline;
+            }
+            
+            size_t first = procName.find_first_not_of(" \t\n\r");
+            if(first != std::string::npos) {
+                size_t last = procName.find_last_not_of(" \t\n\r");
+                procName = procName.substr(first, (last - first + 1));
+            }
+            
+            return true;
+        }
+    }
 
-    std::string processName = "";
+    std::string commPath = "/proc/" + std::to_string(pid) + "/comm";
+    std::ifstream commFile(commPath);
+    
     if(commFile.is_open()) {
+        std::string processName;
         std::getline(commFile, processName);
 
-        // Trim
         size_t first = processName.find_first_not_of(" \t\n\r");
         if(first != std::string::npos) {
             size_t last = processName.find_last_not_of(" \t\n\r");
